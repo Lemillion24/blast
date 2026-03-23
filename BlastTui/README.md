@@ -42,7 +42,7 @@ go version   # >= 1.22
 ## Installation & lancement
 
 ```bash
-git clone https://github.com/nossyrrah/blast
+git clone https://github.com/Lemillion24/blast
 cd blast
 go mod tidy
 go run ./cmd/blast/

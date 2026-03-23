@@ -1,4 +1,4 @@
-module github.com/nossyrrah/blast
+module github.com/Lemillion24/blast
 
 go 1.22
 

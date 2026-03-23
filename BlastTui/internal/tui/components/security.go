@@ -6,8 +6,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/nossyrrah/blast/internal/security"
-	"github.com/nossyrrah/blast/internal/tui/styles"
+	"github.com/Lemillion24/blast/internal/security"
+	"github.com/Lemillion24/blast/internal/tui/styles"
 	"github.com/charmbracelet/lipgloss"
 )
 

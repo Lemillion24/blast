@@ -7,8 +7,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/nossyrrah/blast/internal/monitor"
-	"github.com/nossyrrah/blast/internal/tui/styles"
+	"github.com/Lemillion24/blast/internal/monitor"
+	"github.com/Lemillion24/blast/internal/tui/styles"
 )
 
 // MonitorPanel affiche les métriques système : CPU, RAM, Disk, processus.

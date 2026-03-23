@@ -7,8 +7,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/nossyrrah/blast/internal/network"
-	"github.com/nossyrrah/blast/internal/tui/styles"
+	"github.com/Lemillion24/blast/internal/network"
+	"github.com/Lemillion24/blast/internal/tui/styles"
 )
 
 // NetworkPanel affiche les connexions actives avec PID ↔ socket ↔ DNS.

@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/nossyrrah/blast/internal/tui/styles"
+	"github.com/Lemillion24/blast/internal/tui/styles"
 )
 
 // LogsPanel affiche les logs structurés en temps réel avec scroll.

@@ -9,8 +9,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/nossyrrah/blast/internal/tui/components"
-	"github.com/nossyrrah/blast/internal/tui/styles"
+	"github.com/Lemillion24/blast/internal/tui/components"
+	"github.com/Lemillion24/blast/internal/tui/styles"
 )
 
 // Tab représente un onglet/panneau du TUI.

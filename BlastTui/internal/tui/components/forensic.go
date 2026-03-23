@@ -8,8 +8,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/nossyrrah/blast/internal/forensic"
-	"github.com/nossyrrah/blast/internal/tui/styles"
+	"github.com/Lemillion24/blast/internal/forensic"
+	"github.com/Lemillion24/blast/internal/tui/styles"
 )
 
 // ForensicPanel affiche la timeline des événements et permet l'export.
