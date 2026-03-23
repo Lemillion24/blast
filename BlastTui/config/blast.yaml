@@ -1,0 +1,33 @@
+# Configuration principale de BLAST
+# Modifiable sans recompiler — rechargement à chaud prévu en Phase 4
+
+app:
+  log_level: info          # debug | info | warn | error
+  log_file: logs/blast.log
+  refresh_interval: 1s     # fréquence de rafraîchissement du TUI
+
+monitor:
+  top_processes: 15        # nombre de processus affichés dans le panneau
+  disk_path: /             # partition à surveiller
+
+network:
+  capture_interface: any   # interface réseau (any = toutes)
+  resolve_dns: true        # résolution DNS inverse des IPs distantes
+  dns_cache_ttl: 60s       # durée de vie du cache DNS
+
+security:
+  rules_dir: rules/        # répertoire des règles YARA et YAML
+  scan_on_start: false     # scan rapide au lancement
+  quick_scan_targets:
+    - /tmp
+    - /dev/shm
+    - /var/tmp
+
+forensic:
+  export_dir: exports/     # répertoire des exports JSON/CSV
+  max_events: 500          # nombre max d'événements en mémoire
+
+alerts:
+  notify_send: true        # notifications bureau (notify-send)
+  log_file: logs/alerts.log
+  min_level_notify: high   # niveau minimum pour notify-send (info|warn|high|critical)

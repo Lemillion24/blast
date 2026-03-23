@@ -1,0 +1,10 @@
+name: suspicious_reverse_shell
+description: |
+  Détecte un processus shell (bash, sh, zsh) qui a ouvert une connexion
+  réseau sortante — comportement typique d'un reverse shell.
+severity: critical
+conditions:
+  process_name: "bash|sh|zsh|dash"
+  has_outbound_connection: "true"
+  connection_port_not_in: "80,443,22"
+action: alert
