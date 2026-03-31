@@ -73,11 +73,16 @@ func topProcesses(n int) ([]ProcessInfo, error) {
 		cpuPct, _ := p.CPUPercent()
 		memInfo, _ := p.MemoryInfo()
 		user, _ := p.Username()
-		status, _ := p.Status()
+		statusSlice, _ := p.Status()
 
 		rss := uint64(0)
 		if memInfo != nil {
 			rss = memInfo.RSS
+		}
+
+		statusStr := "?"
+		if len(statusSlice) > 0 {
+			statusStr = statusSlice[0]
 		}
 
 		infos = append(infos, ProcessInfo{
@@ -86,7 +91,7 @@ func topProcesses(n int) ([]ProcessInfo, error) {
 			CPUPercent: cpuPct,
 			MemRSS:     rss,
 			Username:   user,
-			Status:     status[0],
+			Status:     statusStr,
 		})
 	}
 

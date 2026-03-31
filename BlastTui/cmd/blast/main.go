@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Lemillion24/blast/internal/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -46,9 +47,7 @@ func init() {
 
 // runTUI lance l'interface TUI interactive.
 func runTUI() error {
-	fmt.Println("Lancement de BLAST en mode TUI...")
-	// TODO Phase 2 : appeler internal/tui.Start()
-	return nil
+	return tui.Start()
 }
 
 // runDaemon lance BLAST en mode daemon (service arrière-plan).

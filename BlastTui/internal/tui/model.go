@@ -130,11 +130,23 @@ func (m AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ready = true
 
 	case TickMsg:
-		// Re-planifier le prochain tick
 		cmds = append(cmds, tickCmd())
+		// Envoyer un RefreshMsg au panneau actif pour rafraîchir ses données
+		refresh := components.RefreshMsg{}
+		switch m.activeTab {
+		case TabMonitor:
+			updated, cmd := m.monitorPanel.Update(refresh)
+			m.monitorPanel = updated.(components.MonitorPanel)
+			cmds = append(cmds, cmd)
+		case TabNetwork:
+			updated, cmd := m.networkPanel.Update(refresh)
+			m.networkPanel = updated.(components.NetworkPanel)
+			cmds = append(cmds, cmd)
+		}
+		return m, tea.Batch(cmds...)
 	}
 
-	// Propager le message au panneau actif uniquement (optimisation)
+	// Propager le message au panneau actif
 	switch m.activeTab {
 	case TabMonitor:
 		updated, cmd := m.monitorPanel.Update(msg)

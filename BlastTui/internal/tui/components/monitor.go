@@ -21,14 +21,17 @@ func NewMonitorPanel() MonitorPanel {
 }
 
 func (m MonitorPanel) Init() tea.Cmd {
-	return fetchStatsCmd()
+	return FetchStatsCmd()
 }
 
 // StatsMsg transporte les métriques fraîches vers le panneau.
 type StatsMsg monitor.SystemStats
 
-// fetchStatsCmd collecte les métriques système en arrière-plan.
-func fetchStatsCmd() tea.Cmd {
+// RefreshMsg demande un rafraîchissement des données (envoyé par le modèle racine sur chaque tick).
+type RefreshMsg struct{}
+
+// FetchStatsCmd collecte les métriques système en arrière-plan.
+func FetchStatsCmd() tea.Cmd {
 	return func() tea.Msg {
 		stats, err := monitor.Collect()
 		if err != nil {
@@ -43,9 +46,8 @@ func (m MonitorPanel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case StatsMsg:
 		m.stats = monitor.SystemStats(msg)
 		return m, nil
-	// Rafraîchir à chaque tick
-	case interface{ isTickMsg() }:
-		return m, fetchStatsCmd()
+	case RefreshMsg:
+		return m, FetchStatsCmd()
 	}
 	return m, nil
 }

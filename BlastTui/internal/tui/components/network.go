@@ -43,6 +43,8 @@ func (n NetworkPanel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case ConnectionsMsg:
 		n.connections = []network.Connection(msg)
 		return n, nil
+	case RefreshMsg:
+		return n, fetchConnectionsCmd()
 	}
 	return n, nil
 }

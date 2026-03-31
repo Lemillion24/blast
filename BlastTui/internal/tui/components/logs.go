@@ -24,6 +24,10 @@ func NewLogsPanel() LogsPanel {
 	return LogsPanel{}
 }
 
+func (l LogsPanel) Init() tea.Cmd {
+	return nil
+}
+
 func (l LogsPanel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:

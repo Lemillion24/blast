@@ -23,6 +23,10 @@ func NewForensicPanel() ForensicPanel {
 	return ForensicPanel{}
 }
 
+func (f ForensicPanel) Init() tea.Cmd {
+	return nil
+}
+
 func (f ForensicPanel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case forensic.EventMsg:

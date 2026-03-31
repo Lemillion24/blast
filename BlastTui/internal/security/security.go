@@ -126,14 +126,20 @@ func (s *Scanner) ScanFile(path string) ([]Alert, error) {
 	return alerts, nil
 }
 
+// RulesLoadedMsg transporte les règles chargées depuis le disque.
+type RulesLoadedMsg []Rule
+
+// ScanResultMsg transporte les alertes issues d'un scan.
+type ScanResultMsg []Alert
+
 // LoadRulesCmd est la commande Bubbletea pour charger les règles.
 func LoadRulesCmd() tea.Cmd {
 	return func() tea.Msg {
 		scanner := NewScanner("rules")
 		if err := scanner.LoadRules(); err != nil {
-			return nil
+			return RulesLoadedMsg(nil)
 		}
-		return scanner.rules
+		return RulesLoadedMsg(scanner.rules)
 	}
 }
 
@@ -157,6 +163,6 @@ func QuickScanCmd() tea.Cmd {
 			})
 		}
 
-		return allAlerts
+		return ScanResultMsg(allAlerts)
 	}
 }

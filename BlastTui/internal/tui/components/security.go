@@ -26,22 +26,18 @@ func (s SecurityPanel) Init() tea.Cmd {
 	return security.LoadRulesCmd()
 }
 
-// AlertMsg transporte une nouvelle alerte de sécurité.
-type AlertMsg security.Alert
-
-// RulesLoadedMsg transporte les règles chargées depuis le disque.
-type RulesLoadedMsg []security.Rule
-
 func (s SecurityPanel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case AlertMsg:
-		s.alerts = append([]security.Alert{security.Alert(msg)}, s.alerts...)
-		// Garder les 100 dernières alertes
+	case security.RulesLoadedMsg:
+		s.rules = []security.Rule(msg)
+	case security.ScanResultMsg:
+		s.scanState = "done"
+		for _, a := range msg {
+			s.alerts = append([]security.Alert{a}, s.alerts...)
+		}
 		if len(s.alerts) > 100 {
 			s.alerts = s.alerts[:100]
 		}
-	case RulesLoadedMsg:
-		s.rules = []security.Rule(msg)
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "s":

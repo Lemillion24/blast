@@ -42,12 +42,12 @@ go version   # >= 1.22
 ## Installation & lancement
 
 ```bash
-git clone https://github.com/Lemillion24/blast
-cd blast
+git clone https://github.com/Lemillion24/blast.git
+cd blast/BlastTui
 go mod tidy
 go run ./cmd/blast/
 
-# Avec privilèges réseau (capture pcap complète)
+# Avec privilèges réseau (lecture /proc complète)
 sudo go run ./cmd/blast/
 
 # Mode daemon
@@ -55,6 +55,13 @@ go run ./cmd/blast/ --daemon
 
 # Scan YARA d'un répertoire
 go run ./cmd/blast/ scan /home/user/Downloads
+
+# Voir la version
+go run ./cmd/blast/ version
+
+# Compiler un binaire
+go build -o blast ./cmd/blast/
+./blast
 ```
 
 ---
@@ -62,32 +69,31 @@ go run ./cmd/blast/ scan /home/user/Downloads
 ## Architecture
 
 ```
-blast/
-├── cmd/blast/          # Point d'entrée + CLI (cobra)
-│   └── main.go
+BlastTui/
+├── cmd/blast/            # Point d'entrée + CLI (cobra)
+│   └── main.go           #   → lance tui.Start() ou le daemon
 ├── internal/
-│   ├── tui/            # Interface utilisateur (bubbletea)
-│   │   ├── model.go    # Modèle racine AppModel
-│   │   ├── components/ # Un fichier par panneau
+│   ├── tui/              # Interface utilisateur (bubbletea)
+│   │   ├── model.go      #   AppModel racine, 5 onglets, dispatch TickMsg → RefreshMsg
+│   │   ├── components/   #   Un fichier par panneau (chacun implémente tea.Model)
 │   │   │   ├── monitor.go
 │   │   │   ├── network.go
 │   │   │   ├── security.go
 │   │   │   ├── forensic.go
 │   │   │   └── logs.go
-│   │   └── styles/     # Palette de couleurs et styles lipgloss
-│   ├── monitor/        # Métriques système (/proc, gopsutil)
-│   ├── network/        # Connexions réseau PID↔socket↔DNS
-│   ├── security/       # YARA + règles comportementales YAML
-│   ├── forensic/       # Timeline + export JSON/CSV
-│   ├── alerts/         # TUI + notify-send + log fichier
-│   └── daemon/         # Mode service système (Phase 4)
+│   │   └── styles/       #   Palette de couleurs et styles lipgloss
+│   ├── monitor/          # Métriques système (/proc, gopsutil)
+│   ├── network/          # Connexions réseau PID↔socket↔DNS via /proc/net/tcp
+│   ├── security/         # YARA + règles comportementales YAML
+│   ├── forensic/         # Timeline + export JSON/CSV
+│   └── alerts/           # Notifications multi-canaux (TUI + notify-send + log)
 ├── config/
-│   └── blast.yaml      # Configuration (rechargement à chaud prévu)
+│   └── blast.yaml        # Configuration (rechargement à chaud prévu Phase 4)
 ├── rules/
-│   ├── yara/           # Règles YARA (.yar)
-│   └── custom/         # Règles comportementales (.yaml)
-├── logs/               # Logs BLAST et alertes
-└── exports/            # Exports forensic JSON/CSV
+│   ├── yara/             # Règles YARA (.yar)
+│   └── custom/           # Règles comportementales (.yaml)
+├── logs/                 # Logs BLAST et alertes
+└── exports/              # Exports forensic JSON/CSV
 ```
 
 ---
@@ -97,13 +103,17 @@ blast/
 ### Phase 1 — Fondations (semaines 1-2)
 **Objectif :** TUI qui tourne, métriques système affichées
 
-- [x] Structure du projet et `go.mod`
-- [x] CLI avec `cobra` (flags `--daemon`, `--config`, `scan`)
+- [x] Structure du projet et `go.mod` (module `github.com/Lemillion24/blast`)
+- [x] CLI avec `cobra` (flags `--daemon`, `--config`, `scan`, `version`, `stop`)
 - [x] Modèle TUI principal Bubbletea (`AppModel`, 5 onglets)
-- [x] Styles Lipgloss (palette BLAST)
-- [x] Module `monitor` : CPU, RAM, Disk, top processus
-- [ ] Connecter `monitor` au panneau TUI (supprimer les stubs)
-- [ ] Tests manuels : `go run ./cmd/blast/`
+- [x] Styles Lipgloss (palette BLAST vert néon / rouge / orange)
+- [x] Module `monitor` : CPU, RAM, Disk, top processus (gopsutil)
+- [x] Connecter `monitor` au panneau TUI via `RefreshMsg` (rafraîchissement chaque seconde)
+- [x] Connecter `tui.Start()` dans `main.go` (le TUI se lance au démarrage)
+- [x] Tous les panneaux implémentent `tea.Model` (`Init`, `Update`, `View`)
+- [x] Types de messages typés : `StatsMsg`, `ConnectionsMsg`, `RulesLoadedMsg`, `ScanResultMsg`
+- [x] Protection panic sur `p.Status()` (slice vide)
+- [x] `go build ./...` + `go vet ./...` passent sans erreur
 
 **Compétences Go acquises :** `tea.Model`, channels, goroutines basics
 
@@ -112,10 +122,13 @@ blast/
 ### Phase 2 — Réseau sans capture (semaines 3-4)
 **Objectif :** Voir quel processus parle à qui, sans root
 
-- [ ] Parser `/proc/net/tcp` et `/proc/net/tcp6` complètement
-- [ ] Mapper inode → PID via `/proc/[pid]/fd`
-- [ ] Résolution DNS inverse avec cache (TTL configurable)
-- [ ] Panneau réseau TUI avec filtre texte libre
+- [x] Parser `/proc/net/tcp` et `/proc/net/tcp6`
+- [x] Mapper inode → PID via `/proc/[pid]/fd` (buildInodePIDMap)
+- [x] Résolution DNS inverse (net.LookupAddr)
+- [x] Panneau réseau TUI avec rafraîchissement automatique
+- [ ] Compléter `extractInode()` (stub actuel, corrélation PID↔socket incomplète)
+- [ ] Cache DNS avec TTL configurable
+- [ ] Filtre texte libre dans le panneau réseau
 - [ ] Alertes si processus système (ex: `systemd`) ouvre connexion externe
 
 **Compétences Go acquises :** parsing de fichiers, maps, net.Lookup
@@ -125,9 +138,12 @@ blast/
 ### Phase 3 — Sécurité YARA + règles YAML (semaines 5-7)
 **Objectif :** Détection de malware et comportements suspects
 
+- [x] Panneau sécurité TUI avec affichage règles et alertes
+- [x] Chargement des règles YAML comportementales (`LoadRulesCmd` → `RulesLoadedMsg`)
+- [x] Scan rapide des zones à risque (`QuickScanCmd` → `ScanResultMsg`)
+- [x] Scan stub comportemental (détection scripts .sh exécutables)
 - [ ] Installer `libyara-dev` et décommenter `go-yara` dans `go.mod`
-- [ ] Intégrer `go-yara` dans `internal/security`
-- [ ] Scan de fichier unique + scan récursif de répertoire
+- [ ] Intégrer `go-yara` dans `internal/security` (scan réel)
 - [ ] Moteur de règles YAML : parser les conditions et les évaluer
 - [ ] Corrélation réseau + process (ex: bash + connexion sortante = alerte)
 - [ ] Kill/Suspend processus avec confirmation TUI
@@ -154,8 +170,10 @@ blast/
 ### Phase 5 — Forensic & polish (semaines 11-12)
 **Objectif :** Export, documentation, présentation portfolio
 
-- [ ] Timeline forensic complète avec tous les événements
-- [ ] Export JSON et CSV horodatés
+- [x] Panneau forensic TUI avec timeline d'événements
+- [x] Export JSON et CSV horodatés (`ExportJSONCmd`, `ExportCSVCmd`)
+- [x] Panneau logs temps réel avec viewport scrollable (bubbles/viewport)
+- [x] Système d'alertes multi-canaux (TUI + notify-send + log fichier)
 - [ ] Rapport HTML optionnel (avec template Go)
 - [ ] Support Windows (abstraction `pkg/sysinfo`)
 - [ ] Tests unitaires (monitor, network parser, rules engine)
